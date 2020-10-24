@@ -9,7 +9,7 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Role, Question, Answer, Question_Images, Answer_Images
-#from models import Person
+import datetime
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -30,22 +30,34 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+#region user_endpoints
 @app.route('/user/<int:id>', methods=['GET'])
 def get_user(id):
     user = User.query.get(id)
     return user.serialize(), 200
 
-@app.route('/member/<int:member_id>', methods=['GET'])
-def get_member(member_id):
-    member_to_return = jackson_family.get_member(member_id)
-    return member_to_return, 200
+@app.route('/user-by-email/<string:email>', methods=['GET'])
+def get_user_by_email(email):
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        raise APIException('User with the email ' + email + ' not found', status_code=400)
+    return user.serialize(), 200
 
 @app.route('/users', methods=['GET'])
 def get_users():
     users = User.query.all()
     all_users = list(map(lambda x: x.serialize(), users))
-
     return jsonify(all_users), 200
+
+@app.route('/user', methods=['POST'])
+def add_user():
+    request_body = request.get_json()
+    now = datetime.datetime.now()
+    user = User(name=request_body["name"], email=request_body["email"], password=request_body["password"], id_role=2, created=now, last_update=now)
+    db.session.add(user)
+    db.session.commit()    
+    return "User added", 200
+#endregion
 
 @app.route('/roles', methods=['GET'])
 def get_roles():
@@ -61,12 +73,24 @@ def get_questions():
 
     return jsonify(all_questions), 200
 
+#region answer_endpoints
 @app.route('/answers', methods=['GET'])
 def get_answers():
     answers = Answer.query.all()
     all_answers = list(map(lambda x: x.serialize(), answers))
 
     return jsonify(all_answers), 200
+
+@app.route('/answers-by-question-id/<int:id>', methods=['GET'])
+def answers_by_question_id(id):
+    answers  = Answer.query.filter_by(id_question=id).all() 
+    if answers is None:
+        raise APIException('User with the email ' + email + ' not found', status_code=400)
+    all_answers = list(map(lambda x: x.serialize(), answers))
+    return jsonify(all_answers), 200
+
+#endregion
+
 
 @app.route('/question-images', methods=['GET'])
 def get_question_images():
