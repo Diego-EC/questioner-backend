@@ -53,7 +53,7 @@ class Question(db.Model):
     title = db.Column(db.String(100), unique=False, nullable=False)
     description = db.Column(db.String(1000), unique=False, nullable=False)
     link = db.Column(db.String(120), unique=False, nullable=True)
-    id_answer_selected = db.Column(db.Integer, db.ForeignKey("answer.id"))
+    id_answer_selected = db.Column(db.Integer, db.ForeignKey("answer.id"), default=None)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship('User', foreign_keys=[id_user])
