@@ -53,14 +53,14 @@ class Question(db.Model):
     title = db.Column(db.String(100), unique=False, nullable=False)
     description = db.Column(db.String(1000), unique=False, nullable=False)
     link = db.Column(db.String(120), unique=False, nullable=True)
-    id_answer_selected = db.Column(db.Integer, db.ForeignKey("answer.id"))
+    id_answer_selected = db.Column(db.Integer, db.ForeignKey("answer.id"), default=None)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship('User', foreign_keys=[id_user])
     answer = db.relationship('Answer', foreign_keys=[id_answer_selected])
 
     def __repr__(self):
-        return '<Title %r>' % self.title
+        return '<id %r>' % self.id
 
     def serialize(self):
         return {
@@ -83,7 +83,7 @@ class Answer(db.Model):
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship("User", foreign_keys=[id_user])
-    question = db.relationship("Question", backref="Answer", primaryjoin=id==Question.id_answer_selected)
+    question = db.relationship("Question", foreign_keys=[id_question])
 
     def __repr__(self):
         return '<Answer %r>' % self.id
