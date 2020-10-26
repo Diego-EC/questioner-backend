@@ -265,7 +265,7 @@ def delete_answer_image(id):
     return "Answer_Image deleted", 200
 
 @app.route('/answer-images-delete-by-answer-id/<int:id>', methods=['DELETE'])
-def delete_question_image_by_question_id(id):
+def delete_answer_image_by_answer_id(id):
     db.session.query(Answer_Images).filter(Answer_Images.id_answer == id).delete(synchronize_session=False)
     db.session.commit()
     return "Answer_Images deleted", 200
