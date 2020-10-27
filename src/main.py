@@ -10,8 +10,16 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Role, Question, Answer, Question_Images, Answer_Images
 import datetime
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity
+)
 
 app = Flask(__name__)
+
+app.config['JWT_SECRET_KEY'] = '546asdf8965as4f6987wetr654'
+jwt = JWTManager(app)
+
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -29,6 +37,40 @@ def handle_invalid_usage(error):
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
+
+#region login_logout
+@app.route('/login', methods=['POST'])
+def login():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    email = request.json.get('email', None)
+    password = request.json.get('password', None)
+    if not email:
+        return jsonify({"msg": "Missing email parameter"}), 400
+    if not password:
+        return jsonify({"msg": "Missing password parameter"}), 400
+
+    user = User.query.filter_by(email=email).filter_by(password=password).filter_by(is_active=True).one_or_none()
+
+    status = "OK"
+    if user is None:
+        return jsonify({"status": "KO", "msg": "Bad username or password"}), 401
+
+    access_token = create_access_token(identity=user.id)
+    return jsonify({"status": status, "access_token": access_token}), 200
+
+@app.route('/check-protected', methods=['POST'])
+@jwt_required
+def check_protected():
+    user_id  = get_jwt_identity()
+    user = User.query.get(user_id)
+    return jsonify({"status": "OK", "logged_in_as": user.serialize()}), 200
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    return jsonify({"status": "OK"}), 200
+#endregion
 
 #region role_endpoints
 @app.route('/roles', methods=['GET'])
