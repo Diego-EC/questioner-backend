@@ -99,7 +99,7 @@ class Answer(db.Model):
             "last_update": self.last_update
         }
 
-class Question_Images(db.Model):
+class QuestionImages(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_question = db.Column(db.Integer, db.ForeignKey("question.id"))
     url = db.Column(db.String(120), unique=False, nullable=False)
@@ -109,7 +109,7 @@ class Question_Images(db.Model):
     question = db.relationship("Question", foreign_keys=[id_question])
 
     def __repr__(self):
-        return '<Question_Images %r>' % self.id
+        return '<QuestionImages %r>' % self.id
 
     def serialize(self):
         return {
@@ -121,7 +121,7 @@ class Question_Images(db.Model):
             "last_update": self.last_update
         }
 
-class Answer_Images(db.Model):
+class AnswerImages(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_answer = db.Column(db.Integer, db.ForeignKey("answer.id"))
     url = db.Column(db.String(250), unique=False, nullable=False)
@@ -131,7 +131,7 @@ class Answer_Images(db.Model):
     answer = db.relationship("Answer", foreign_keys=[id_answer])
 
     def __repr__(self):
-        return '<Answer_Images %r>' % self.id
+        return '<AnswerImages %r>' % self.id
 
     def serialize(self):
         return {
