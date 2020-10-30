@@ -147,6 +147,15 @@ def get_questions():
     all_questions = list(map(lambda x: x.serialize(), questions))
     return jsonify(all_questions), 200
 
+@app.route('/question/<int:id>', methods=['GET'])
+def get_question(id):
+    request_body = request.get_json()
+    question = Question.query.get(id)
+    if question is None:
+        raise APIException('Question not found', status_code=404)
+    #json_question = map(lambda x: x.serialize(), question)
+    return jsonify(question.serialize()), 200
+
 @app.route('/question', methods=['POST'])
 def add_question():
     request_body = request.get_json()
