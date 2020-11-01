@@ -83,6 +83,7 @@ def get_roles():
 
 #region user_endpoints
 @app.route('/user/<int:id>', methods=['GET'])
+@jwt_required
 def get_user(id):
     user = User.query.get(id)
     return user.serialize(), 200
@@ -149,11 +150,9 @@ def get_questions():
 
 @app.route('/question/<int:id>', methods=['GET'])
 def get_question(id):
-    request_body = request.get_json()
     question = Question.query.get(id)
     if question is None:
         raise APIException('Question not found', status_code=404)
-    #json_question = map(lambda x: x.serialize(), question)
     return jsonify(question.serialize()), 200
 
 @app.route('/question', methods=['POST'])
@@ -198,8 +197,14 @@ def delete_question(id):
 def get_answers():
     answers = Answer.query.all()
     all_answers = list(map(lambda x: x.serialize(), answers))
-
     return jsonify(all_answers), 200
+
+@app.route('/answer/<int:id>', methods=['GET'])
+def get_answer(id):
+    answer = Answer.query.get(id)
+    if answer is None:
+        raise APIException('Answer not found', status_code=404)
+    return jsonify(answer.serialize()), 200
 
 @app.route('/answers-by-question-id/<int:id>', methods=['GET'])
 def answers_by_question_id(id):
