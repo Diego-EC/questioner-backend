@@ -58,7 +58,7 @@ def login():
         return jsonify({"status": "KO", "msg": "Bad username or password"}), 401
 
     access_token = create_access_token(identity=user.id)
-    return jsonify({"status": status, "access_token": access_token}), 200
+    return jsonify({"status": status, "access_token": access_token, "user": user.serialize()}), 200
 
 @app.route('/check-protected', methods=['POST'])
 @jwt_required
