@@ -72,7 +72,7 @@ class Question(db.Model):
             "id_answer_selected": self.id_answer_selected,
             "created": self.created,
             "last_update": self.last_update,
-            "number_of_answers": None
+            "number_of_answers": 0
         }
 
 class Answer(db.Model):
