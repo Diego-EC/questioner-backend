@@ -146,6 +146,9 @@ def update_user_is_active(id):
 def get_questions():
     questions = Question.query.all()
     all_questions = list(map(lambda x: x.serialize(), questions))
+    for x in all_questions:
+        number = Answer.query.filter_by(id_question=x["id"]).count()
+        x["number_of_answers"] = number
     return jsonify(all_questions), 200
 
 @app.route('/question/<int:id>', methods=['GET'])

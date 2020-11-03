@@ -71,7 +71,8 @@ class Question(db.Model):
             "link": self.link,
             "id_answer_selected": self.id_answer_selected,
             "created": self.created,
-            "last_update": self.last_update
+            "last_update": self.last_update,
+            "number_of_answers": None
         }
 
 class Answer(db.Model):
