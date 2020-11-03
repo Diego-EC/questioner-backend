@@ -193,6 +193,19 @@ def delete_question(id):
     db.session.delete(question)
     db.session.commit() 
     return "Question deleted", 200
+
+@app.route('/mark-best-answer', methods=['PUT'])
+def mark_best_answer():
+    request_body = request.get_json()
+    question = Question.query.get(request_body["id_question"])
+    if question is None:
+        raise APIException('Question not found', status_code=404)
+    answer = Answer.query.get(request_body["id_answer"])
+    if answer is None:
+        raise APIException('Answer not found', status_code=404)
+    question.id_answer_selected = request_body["id_answer"]
+    db.session.commit() 
+    return jsonify("Answer marked"), 200
 #endregion
 
 #region answer_endpoints
