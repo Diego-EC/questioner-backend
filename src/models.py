@@ -23,7 +23,7 @@ class Role(db.Model):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=False, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     id_role = db.Column(db.Integer, db.ForeignKey("role.id"))
     is_active = db.Column(db.Boolean(), unique=False, nullable=False, default=True)
@@ -51,8 +51,8 @@ class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_user = db.Column(db.Integer, db.ForeignKey("user.id"))
     title = db.Column(db.String(100), unique=False, nullable=False)
-    description = db.Column(db.String(1000), unique=False, nullable=False)
-    link = db.Column(db.String(120), unique=False, nullable=True)
+    description = db.Column(db.String(5000), unique=False, nullable=False)
+    link = db.Column(db.String(255), unique=False, nullable=True)
     id_answer_selected = db.Column(db.Integer, db.ForeignKey("answer.id"), default=None)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
@@ -72,15 +72,15 @@ class Question(db.Model):
             "id_answer_selected": self.id_answer_selected,
             "created": self.created,
             "last_update": self.last_update,
-            "number_of_answers": None
+            "number_of_answers": 0
         }
 
 class Answer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_question = db.Column(db.Integer, db.ForeignKey("question.id"))
     id_user = db.Column(db.Integer, db.ForeignKey("user.id"))
-    description = db.Column(db.String(1000), unique=False, nullable=False)
-    link = db.Column(db.String(120), unique=False, nullable=True)
+    description = db.Column(db.String(5000), unique=False, nullable=False)
+    link = db.Column(db.String(255), unique=False, nullable=True)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship("User", foreign_keys=[id_user])
@@ -103,7 +103,7 @@ class Answer(db.Model):
 class QuestionImages(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_question = db.Column(db.Integer, db.ForeignKey("question.id"))
-    url = db.Column(db.String(120), unique=False, nullable=False)
+    url = db.Column(db.String(255), unique=False, nullable=False)
     size = db.Column(db.Integer, unique=False, nullable=True)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
@@ -125,7 +125,7 @@ class QuestionImages(db.Model):
 class AnswerImages(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_answer = db.Column(db.Integer, db.ForeignKey("answer.id"))
-    url = db.Column(db.String(250), unique=False, nullable=False)
+    url = db.Column(db.String(255), unique=False, nullable=False)
     size = db.Column(db.Integer, unique=False, nullable=True)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
