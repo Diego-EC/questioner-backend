@@ -166,7 +166,7 @@ def add_question():
     description=request_body["description"], link=request_body["link"], created=now, last_update=now)
     db.session.add(question)
     db.session.commit()    
-    return "Question added", 200
+    return jsonify("Question added"), 200
 
 @app.route('/question/<int:id>', methods=['PUT'])
 def update_question(id):
@@ -183,7 +183,7 @@ def update_question(id):
     now = datetime.datetime.now()
     question.last_update = now
     db.session.commit() 
-    return "Question updated", 200
+    return jsonify("Question updated"), 200
 
 @app.route('/question/<int:id>', methods=['DELETE'])
 def delete_question(id):
@@ -192,7 +192,7 @@ def delete_question(id):
         raise APIException('Question not found', status_code=404)
     db.session.delete(question)
     db.session.commit() 
-    return "Question deleted", 200
+    return jsonify("Question deleted"), 200
 
 @app.route('/mark-best-answer', methods=['PUT'])
 def mark_best_answer():
@@ -238,7 +238,7 @@ def add_answer():
     description=request_body["description"], link=request_body["link"], created=now, last_update=now)
     db.session.add(answer)
     db.session.commit()    
-    return "Answer added", 200
+    return jsonify("Answer added"), 200
 
 @app.route('/answer/<int:id>', methods=['PUT'])
 def update_answer(id):
@@ -253,7 +253,7 @@ def update_answer(id):
     now = datetime.datetime.now()
     answer.last_update = now
     db.session.commit() 
-    return "Answer updated", 200
+    return jsonify("Answer updated"), 200
 
 @app.route('/answer/<int:id>', methods=['DELETE'])
 def delete_answer(id):
@@ -262,7 +262,7 @@ def delete_answer(id):
         raise APIException('Answer not found', status_code=404)
     db.session.delete(answer)
     db.session.commit() 
-    return "Answer deleted", 200
+    return jsonify("Answer deleted"), 200
 #endregion
 
 #region question_image_endpoints
@@ -286,7 +286,7 @@ def add_question_image():
     size=request_body["size"], created=now, last_update=now)
     db.session.add(question_image)
     db.session.commit()    
-    return "Question Image added", 200
+    return jsonify("Question Image added"), 200
 
 @app.route('/question-image/<int:id>', methods=['DELETE'])
 def delete_question_image(id):
@@ -295,13 +295,13 @@ def delete_question_image(id):
         raise APIException('QuestionImage not found', status_code=404)
     db.session.delete(question_image)
     db.session.commit() 
-    return "QuestionImage deleted", 200
+    return jsonify("QuestionImage deleted"), 200
 
 @app.route('/question-images-delete-by-question-id/<int:id>', methods=['DELETE'])
 def delete_question_image_by_question_id(id):
     db.session.query(QuestionImages).filter(QuestionImages.id_question == id).delete(synchronize_session=False)
     db.session.commit()
-    return "QuestionImages deleted", 200
+    return jsonify("QuestionImages deleted"), 200
 #endregion
 
 #region answer_image_endpoints
@@ -325,7 +325,7 @@ def add_answer_image():
     size=request_body["size"], created=now, last_update=now)
     db.session.add(answer_image)
     db.session.commit()    
-    return "Answer Image added", 200
+    return jsonify("Answer Image added"), 200
 
 @app.route('/answer-image/<int:id>', methods=['DELETE'])
 def delete_answer_image(id):
@@ -334,13 +334,13 @@ def delete_answer_image(id):
         raise APIException('AnswerImage not found', status_code=404)
     db.session.delete(answer_image)
     db.session.commit() 
-    return "AnswerImage deleted", 200
+    return jsonify("AnswerImage deleted"), 200
 
 @app.route('/answer-images-delete-by-answer-id/<int:id>', methods=['DELETE'])
 def delete_answer_image_by_answer_id(id):
     db.session.query(AnswerImages).filter(AnswerImages.id_answer == id).delete(synchronize_session=False)
     db.session.commit()
-    return "AnswerImages deleted", 200
+    return jsonify("AnswerImages deleted"), 200
 #endregion
 
 # this only runs if `$ python src/main.py` is executed
