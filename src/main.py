@@ -108,7 +108,7 @@ def add_user():
     user = User(name=request_body["name"], email=request_body["email"], password=request_body["password"], id_role=2, created=now, last_update=now)
     db.session.add(user)
     db.session.commit()    
-    return "User added", 200
+    return jsonify("User added"), 200
 
 @app.route('/user/<int:id>', methods=['PUT'])
 def update_user(id):
@@ -125,12 +125,12 @@ def update_user(id):
     now = datetime.datetime.now()
     user.last_update = now
     db.session.commit() 
-    return "User updated", 200
+    return jsonify("User updated"), 200
 
-@app.route('/user-is-active/<int:id>', methods=['PUT'])
-def update_user_is_active(id):
+@app.route('/user-is-active', methods=['PUT'])
+def update_user_is_active():
     request_body = request.get_json()
-    user = User.query.get(id)
+    user = User.query.get(request_body["id_user"])
     if user is None:
         raise APIException('User not found', status_code=404)
     if "is_active" in request_body:
@@ -138,7 +138,7 @@ def update_user_is_active(id):
     now = datetime.datetime.now()
     user.last_update = now
     db.session.commit() 
-    return "User is_active updated", 200
+    return jsonify("User is_active updated"), 200
 #endregion
 
 #region question_endpoints
