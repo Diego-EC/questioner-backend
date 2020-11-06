@@ -190,6 +190,11 @@ def delete_question(id):
     question = Question.query.get(id)
     if question is None:
         raise APIException('Question not found', status_code=404)
+
+    answers = Answer.query.filter_by(id_question=id).all()
+    for answer in answers:
+        db.session.delete(answer)
+
     db.session.delete(question)
     db.session.commit() 
     return jsonify("Question deleted"), 200
