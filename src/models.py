@@ -72,7 +72,8 @@ class Question(db.Model):
             "id_answer_selected": self.id_answer_selected,
             "created": self.created,
             "last_update": self.last_update,
-            "number_of_answers": 0
+            "number_of_answers": 0,
+            "user_name": ""
         }
 
 class Answer(db.Model):
@@ -97,7 +98,8 @@ class Answer(db.Model):
             "description": self.description,
             "link": self.link,
             "created": self.created,
-            "last_update": self.last_update
+            "last_update": self.last_update,
+            "user_name": ""
         }
 
 class QuestionImages(db.Model):

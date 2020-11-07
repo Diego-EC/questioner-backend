@@ -149,6 +149,8 @@ def get_questions():
     for x in all_questions:
         number = Answer.query.filter_by(id_question=x["id"]).count()
         x["number_of_answers"] = number
+        user = User.query.filter_by(id=x["id_user"]).first()
+        x["user_name"] = user.name
     return jsonify(all_questions), 200
 
 @app.route('/question/<int:id>', methods=['GET'])
@@ -156,6 +158,15 @@ def get_question(id):
     question = Question.query.get(id)
     if question is None:
         raise APIException('Question not found', status_code=404)
+    user = User.query.get(question.id_user)
+    question.user_name = user.name
+    #question.user_name = "pepe"
+    #question.title = "lol"
+    print(user)
+    print(user.name)
+    print(question.id_user)
+    print(question.user_name)
+    print(question.serialize())
     return jsonify(question.serialize()), 200
 
 @app.route('/question', methods=['POST'])
@@ -218,6 +229,9 @@ def mark_best_answer():
 def get_answers():
     answers = Answer.query.all()
     all_answers = list(map(lambda x: x.serialize(), answers))
+    for x in all_answers:
+        user = User.query.filter_by(id=x["id_user"]).first()
+        x["user_name"] = user.name
     return jsonify(all_answers), 200
 
 @app.route('/answer/<int:id>', methods=['GET'])
@@ -233,6 +247,9 @@ def answers_by_question_id(id):
     if answers is None:
         raise APIException('User with the email ' + email + ' not found', status_code=404)
     all_answers = list(map(lambda x: x.serialize(), answers))
+    for x in all_answers:
+        user = User.query.filter_by(id=x["id_user"]).first()
+        x["user_name"] = user.name
     return jsonify(all_answers), 200
 
 @app.route('/answer', methods=['POST'])
