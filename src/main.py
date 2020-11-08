@@ -14,6 +14,7 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
+from aws import upload_file_to_s3
 
 app = Flask(__name__)
 
@@ -363,6 +364,24 @@ def delete_answer_image_by_answer_id(id):
     db.session.query(AnswerImages).filter(AnswerImages.id_answer == id).delete(synchronize_session=False)
     db.session.commit()
     return jsonify("AnswerImages deleted"), 200
+#endregion
+
+#region upload_images
+@app.route('/upload-file', methods=['POST'])
+def upload_file():
+    file = request.files["document"]
+    #"""
+    #    These attributes are also available
+    #    file.filename               # The actual name of the file
+    #    file.content_type
+    #    file.content_length
+    #    file.mimetype
+    #"""
+    if file:
+        output = upload_file_to_s3(file, os.environ.get('S3_BUCKET_NAME'))
+        return jsonify(output), 200
+    else:
+        return "KO"
 #endregion
 
 # this only runs if `$ python src/main.py` is executed
