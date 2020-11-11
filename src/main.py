@@ -271,7 +271,8 @@ def update_answer(id):
     now = datetime.datetime.now()
     answer.last_update = now
     db.session.commit() 
-    return jsonify("Answer updated"), 200
+    #return jsonify("Answer updated"), 200
+    return jsonify({"status": "OK", "msg": "Updated added", "answer": answer.serialize()}), 200
 
 @app.route('/answer/<int:id>', methods=['DELETE'])
 def delete_answer(id):
