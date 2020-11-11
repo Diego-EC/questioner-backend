@@ -71,10 +71,13 @@ class Question(db.Model):
             "link": self.link,
             "id_answer_selected": self.id_answer_selected,
             "created": self.created,
-            "last_update": self.last_update,
-            "number_of_answers": 0,
-            "user_name": ""
+            "last_update": self.last_update
         }
+
+    def serialize_with_user(self):
+        question = self.serialize()
+        question["user"] = self.user.serialize()
+        return(question)
 
 class Answer(db.Model):
     id = db.Column(db.Integer, primary_key=True)

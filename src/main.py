@@ -14,6 +14,7 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
+from aws import upload_file_to_s3
 
 app = Flask(__name__)
 
@@ -158,16 +159,7 @@ def get_question(id):
     question = Question.query.get(id)
     if question is None:
         raise APIException('Question not found', status_code=404)
-    user = User.query.get(question.id_user)
-    question.user_name = user.name
-    #question.user_name = "pepe"
-    #question.title = "lol"
-    print(user)
-    print(user.name)
-    print(question.id_user)
-    print(question.user_name)
-    print(question.serialize())
-    return jsonify(question.serialize()), 200
+    return jsonify(question.serialize_with_user()), 200
 
 @app.route('/question', methods=['POST'])
 def add_question():
@@ -176,8 +168,11 @@ def add_question():
     question = Question(id_user=request_body["id_user"], title=request_body["title"], 
     description=request_body["description"], link=request_body["link"], created=now, last_update=now)
     db.session.add(question)
-    db.session.commit()    
-    return jsonify("Question added"), 200
+    db.session.commit()  
+
+    return jsonify({"status": "OK", "msg": "Question added", "question": question.serialize()}), 200
+
+    #return jsonify("Question added"), 200
 
 @app.route('/question/<int:id>', methods=['PUT'])
 def update_question(id):
@@ -260,7 +255,8 @@ def add_answer():
     description=request_body["description"], link=request_body["link"], created=now, last_update=now)
     db.session.add(answer)
     db.session.commit()    
-    return jsonify("Answer added"), 200
+    return jsonify({"status": "OK", "msg": "Answer added", "answer": answer.serialize()}), 200
+    #return jsonify("Answer added"), 200
 
 @app.route('/answer/<int:id>', methods=['PUT'])
 def update_answer(id):
@@ -363,6 +359,38 @@ def delete_answer_image_by_answer_id(id):
     db.session.query(AnswerImages).filter(AnswerImages.id_answer == id).delete(synchronize_session=False)
     db.session.commit()
     return jsonify("AnswerImages deleted"), 200
+#endregion
+
+#region upload_images
+@app.route('/upload-question-images', methods=['POST'])
+def upload_question_images():
+    files = request.files
+    id_question = request.form.get('id_question')
+    for key in files:
+        file = files[key]
+        if file:
+            url_image = upload_file_to_s3(file, os.environ.get('S3_BUCKET_NAME'))
+            now = datetime.datetime.now()
+            question_image = QuestionImages(id_question=id_question, url=url_image, 
+            size=0, created=now, last_update=now)
+            db.session.add(question_image)
+            db.session.commit()   
+    return jsonify("OK"), 200
+
+@app.route('/upload-answer-images', methods=['POST'])
+def upload_answer_images():
+    files = request.files
+    id_answer = request.form.get('id_answer')
+    for key in files:
+        file = files[key]
+        if file:
+            url_image = upload_file_to_s3(file, os.environ.get('S3_BUCKET_NAME'))
+            now = datetime.datetime.now()
+            answer_image = AnswerImages(id_answer=id_answer, url=url_image, 
+            size=0, created=now, last_update=now)
+            db.session.add(answer_image)
+            db.session.commit()   
+    return jsonify("OK"), 200
 #endregion
 
 # this only runs if `$ python src/main.py` is executed
