@@ -106,7 +106,7 @@ def get_users():
 def add_user():
     request_body = request.get_json()
     now = datetime.datetime.now()
-    user = User(name=request_body["name"], email=request_body["email"], password=request_body["password"], id_role=2, created=now, last_update=now)
+    user = User(name=request_body["name"], email=request_body["email"], password=request_body["password"], id_role=1, created=now, last_update=now)
     db.session.add(user)
     db.session.commit()    
     return jsonify("User added"), 200
