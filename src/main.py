@@ -15,6 +15,7 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from aws import upload_file_to_s3
+from sqlalchemy import and_, or_, not_
 
 app = Flask(__name__)
 
@@ -140,7 +141,7 @@ def update_user_is_active():
     user.last_update = now
     db.session.commit() 
     return jsonify("User is_active updated"), 200
-#endregion
+#endregion user_endpoints
 
 #region question_endpoints
 @app.route('/questions', methods=['GET'])
@@ -169,10 +170,7 @@ def add_question():
     description=request_body["description"], link=request_body["link"], created=now, last_update=now)
     db.session.add(question)
     db.session.commit()  
-
     return jsonify({"status": "OK", "msg": "Question added", "question": question.serialize()}), 200
-
-    #return jsonify("Question added"), 200
 
 @app.route('/question/<int:id>', methods=['PUT'])
 def update_question(id):
@@ -217,7 +215,26 @@ def mark_best_answer():
     question.id_answer_selected = request_body["id_answer"]
     db.session.commit() 
     return jsonify("Answer marked"), 200
-#endregion
+
+@app.route('/search-questions-by-string/<string:searchText>', methods=['GET'])
+def get_search_questions_by_string(searchText):
+    words = searchText.split(' ')
+
+    filters = []
+    for word in words:
+        if len(word) >= 3:
+            word_like = "%{}%".format(word)
+            filters.append(Question.title.ilike(word_like))
+            filters.append(Question.description.ilike(word_like))
+    questions = Question.query.filter(or_(*filters)).all()
+    all_questions = list(map(lambda x: x.serialize(), questions))
+    for x in all_questions:
+        number = Answer.query.filter_by(id_question=x["id"]).count()
+        x["number_of_answers"] = number
+        user = User.query.filter_by(id=x["id_user"]).first()
+        x["user_name"] = user.name
+    return jsonify({"status": "OK", "msg": "Search result", "questions": all_questions}), 200
+#endregion question_endpoints
 
 #region answer_endpoints
 @app.route('/answers', methods=['GET'])
