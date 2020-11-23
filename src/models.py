@@ -7,7 +7,6 @@ class Role(db.Model):
     name = db.Column(db.String(80), unique=True, nullable=False)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
-    foo = db.Column(db.String(1), unique=False, nullable=False)
     
     #print
     def __repr__(self):
@@ -32,7 +31,6 @@ class User(db.Model):
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     role = db.relationship('Role', lazy=True)
-    foo =  db.Column(db.String(1), unique=False, nullable=False)
 
     def __repr__(self):
         return '<Name %r>' % self.name        
@@ -60,7 +58,6 @@ class Question(db.Model):
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship('User', foreign_keys=[id_user])
     answer = db.relationship('Answer', foreign_keys=[id_answer_selected])
-    foo =  db.Column(db.String(1), unique=False, nullable=False)
 
     def __repr__(self):
         return '<id %r>' % self.id
@@ -92,7 +89,6 @@ class Answer(db.Model):
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship("User", foreign_keys=[id_user])
     question = db.relationship("Question", foreign_keys=[id_question])
-    foo = db.Column(db.String(1), unique=False, nullable=False)
 
     def __repr__(self):
         return '<Answer %r>' % self.id
@@ -117,7 +113,6 @@ class QuestionImages(db.Model):
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     question = db.relationship("Question", foreign_keys=[id_question])
-    foo =  db.Column(db.String(1), unique=False, nullable=False)
 
     def __repr__(self):
         return '<QuestionImages %r>' % self.id
@@ -140,7 +135,6 @@ class AnswerImages(db.Model):
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     answer = db.relationship("Answer", foreign_keys=[id_answer])
-    foo =  db.Column(db.String(1), unique=False, nullable=False)
 
     def __repr__(self):
         return '<AnswerImages %r>' % self.id
