@@ -59,7 +59,8 @@ def login():
     if user is None:
         return jsonify({"status": "KO", "msg": "Bad username or password"}), 401
 
-    access_token = create_access_token(identity=user.id)
+    #https://flask-jwt-extended.readthedocs.io/en/stable/api/
+    access_token = create_access_token(identity=user.id, expires_delta=datetime.timedelta(days=30))
     return jsonify({"status": status, "access_token": access_token, "user": user.serialize()}), 200
 
 @app.route('/check-protected', methods=['POST'])
