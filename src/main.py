@@ -25,6 +25,7 @@ jwt = JWTManager(app)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=30)
 MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
@@ -60,7 +61,7 @@ def login():
         return jsonify({"status": "KO", "msg": "Bad username or password"}), 401
 
     #https://flask-jwt-extended.readthedocs.io/en/stable/api/
-    access_token = create_access_token(identity=user.id, expires_delta=datetime.timedelta(days=30))
+    access_token = create_access_token(identity=user.id)
     return jsonify({"status": status, "access_token": access_token, "user": user.serialize()}), 200
 
 @app.route('/check-protected', methods=['POST'])
