@@ -9,7 +9,6 @@ def setup_admin(app):
     admin = Admin(app, name='4Geeks Admin', template_mode='bootstrap3')
 
     admin.add_view(ModelView(User, db.session))
-    admin.add_view(ModelView(Role, db.session))
     admin.add_view(ModelView(Question, db.session))
     admin.add_view(ModelView(Answer, db.session))
     admin.add_view(ModelView(QuestionImages, db.session))
