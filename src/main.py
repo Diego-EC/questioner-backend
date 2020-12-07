@@ -9,6 +9,7 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Role, Question, Answer, QuestionImages, AnswerImages
+from helpers import DBManager
 import datetime
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -35,6 +36,21 @@ setup_admin(app)
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
+
+@app.cli.command("create-roles")
+def create_roles():
+    now = datetime.datetime.now()
+    if not Role.query.get(1):
+        role = Role(id=1, name="Admin", created=now, last_update=now)
+        role.save()
+    if not Role.query.get(2):
+        role = Role(id=2, name="User", created=now, last_update=now)
+        role.save()
+    if not Role.query.get(3):
+        role = Role(id=3, name="Lol", created=now, last_update=now)
+        role.save()
+    DBManager.commitSession()
+    return
 
 # generate sitemap with all your endpoints
 @app.route('/')

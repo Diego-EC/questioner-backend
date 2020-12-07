@@ -1,8 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
+from helpers import ModelHelper
 
 db = SQLAlchemy()
 
-class Role(db.Model):
+class Role(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
@@ -18,7 +19,7 @@ class Role(db.Model):
             "name": self.name,
             "created": self.created,
             "last_update": self.last_update
-        }
+        }        
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
