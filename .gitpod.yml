@@ -16,7 +16,6 @@ tasks:
       command: >
         pipenv run start;
     - command: python3 welcome.py
-    - command: pipenv run create-roles
       openMode: split-right
 
 github:
