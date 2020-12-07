@@ -39,15 +39,13 @@ def handle_invalid_usage(error):
 
 @app.cli.command("create-roles")
 def create_roles():
+    print("create_roles")
     now = datetime.datetime.now()
     if not Role.query.get(1):
         role = Role(id=1, name="Admin", created=now, last_update=now)
         role.save()
     if not Role.query.get(2):
         role = Role(id=2, name="User", created=now, last_update=now)
-        role.save()
-    if not Role.query.get(3):
-        role = Role(id=3, name="Lol", created=now, last_update=now)
         role.save()
     DBManager.commitSession()
     return
@@ -56,27 +54,28 @@ def create_roles():
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
+    #return "", 200
 
 #region login_logout
 @app.route('/login', methods=['POST'])
 def login():
+    status = "KO"
     if not request.is_json:
-        return jsonify({"msg": "Missing JSON in request"}), 400
+        return jsonify({"status": status, "msg": "Missing JSON in request"}), 400
 
     email = request.json.get('email', None)
     password = request.json.get('password', None)
     if not email:
-        return jsonify({"msg": "Missing email parameter"}), 400
+        return jsonify({"status": status, "msg": "Missing email parameter"}), 400
     if not password:
-        return jsonify({"msg": "Missing password parameter"}), 400
+        return jsonify({"status": status, "msg": "Missing password parameter"}), 400
 
     user = User.query.filter_by(email=email).filter_by(password=password).filter_by(is_active=True).one_or_none()
 
-    status = "OK"
     if user is None:
-        return jsonify({"status": "KO", "msg": "Bad username or password"}), 401
+        return jsonify({"status": status, "msg": "Bad username or password"}), 401
 
-    #https://flask-jwt-extended.readthedocs.io/en/stable/api/
+    status = "OK"
     access_token = create_access_token(identity=user.id)
     return jsonify({"status": status, "access_token": access_token, "user": user.serialize()}), 200
 
