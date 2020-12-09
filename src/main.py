@@ -93,6 +93,7 @@ def logout():
 
 #region role_endpoints
 @app.route('/roles', methods=['GET'])
+@jwt_required
 def get_roles():
     roles = Role.query.all()
     all_roles = list(map(lambda x: x.serialize(), roles))
@@ -108,6 +109,7 @@ def get_user(id):
     return user.serialize(), 200
 
 @app.route('/user-by-email/<string:email>', methods=['GET'])
+@jwt_required
 def get_user_by_email(email):
     user = User.query.filter_by(email=email).first()
     if user is None:
@@ -115,6 +117,7 @@ def get_user_by_email(email):
     return user.serialize(), 200
 
 @app.route('/users', methods=['GET'])
+@jwt_required
 def get_users():
     users = User.query.all()
     all_users = list(map(lambda x: x.serialize(), users))
@@ -130,6 +133,7 @@ def add_user():
     return jsonify("User added"), 200
 
 @app.route('/user/<int:id>', methods=['PUT'])
+@jwt_required
 def update_user(id):
     request_body = request.get_json()
     user = User.query.get(id)
@@ -147,6 +151,7 @@ def update_user(id):
     return jsonify("User updated"), 200
 
 @app.route('/user-is-active', methods=['PUT'])
+@jwt_required
 def update_user_is_active():
     request_body = request.get_json()
     user = User.query.get(request_body["id_user"])
@@ -162,6 +167,7 @@ def update_user_is_active():
 
 #region question_endpoints
 @app.route('/questions', methods=['GET'])
+@jwt_required
 def get_questions():
     questions = Question.query.all()
     all_questions = list(map(lambda x: x.serialize(), questions))
@@ -173,6 +179,7 @@ def get_questions():
     return jsonify(all_questions), 200
 
 @app.route('/question/<int:id>', methods=['GET'])
+@jwt_required
 def get_question(id):
     question = Question.query.get(id)
     if question is None:
@@ -180,6 +187,7 @@ def get_question(id):
     return jsonify(question.serialize_with_user()), 200
 
 @app.route('/question', methods=['POST'])
+@jwt_required
 def add_question():
     request_body = request.get_json()
     now = datetime.datetime.now()
@@ -190,6 +198,7 @@ def add_question():
     return jsonify({"status": "OK", "msg": "Question added", "question": question.serialize()}), 200
 
 @app.route('/question/<int:id>', methods=['PUT'])
+@jwt_required
 def update_question(id):
     request_body = request.get_json()
     question = Question.query.get(id)
@@ -207,6 +216,7 @@ def update_question(id):
     return jsonify("Question updated"), 200
 
 @app.route('/question/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_question(id):
     question = Question.query.get(id)
     if question is None:
@@ -221,6 +231,7 @@ def delete_question(id):
     return jsonify("Question deleted"), 200
 
 @app.route('/mark-best-answer', methods=['PUT'])
+@jwt_required
 def mark_best_answer():
     request_body = request.get_json()
     question = Question.query.get(request_body["id_question"])
@@ -234,6 +245,7 @@ def mark_best_answer():
     return jsonify("Answer marked"), 200
 
 @app.route('/search-questions-by-string/<string:searchText>', methods=['GET'])
+@jwt_required
 def get_search_questions_by_string(searchText):
     words = searchText.split(' ')
 
@@ -255,6 +267,7 @@ def get_search_questions_by_string(searchText):
 
 #region answer_endpoints
 @app.route('/answers', methods=['GET'])
+@jwt_required
 def get_answers():
     answers = Answer.query.all()
     all_answers = list(map(lambda x: x.serialize(), answers))
@@ -264,6 +277,7 @@ def get_answers():
     return jsonify(all_answers), 200
 
 @app.route('/answer/<int:id>', methods=['GET'])
+@jwt_required
 def get_answer(id):
     answer = Answer.query.get(id)
     if answer is None:
@@ -271,6 +285,7 @@ def get_answer(id):
     return jsonify(answer.serialize()), 200
 
 @app.route('/answers-by-question-id/<int:id>', methods=['GET'])
+@jwt_required
 def answers_by_question_id(id):
     answers  = Answer.query.filter_by(id_question=id).all() 
     if answers is None:
@@ -282,6 +297,7 @@ def answers_by_question_id(id):
     return jsonify(all_answers), 200
 
 @app.route('/answer', methods=['POST'])
+@jwt_required
 def add_answer():
     request_body = request.get_json()
     now = datetime.datetime.now()
@@ -293,6 +309,7 @@ def add_answer():
     #return jsonify("Answer added"), 200
 
 @app.route('/answer/<int:id>', methods=['PUT'])
+@jwt_required
 def update_answer(id):
     request_body = request.get_json()
     answer = Answer.query.get(id)
@@ -309,6 +326,7 @@ def update_answer(id):
     return jsonify({"status": "OK", "msg": "Updated added", "answer": answer.serialize()}), 200
 
 @app.route('/answer/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_answer(id):
     answer = Answer.query.get(id)
     if answer is None:
@@ -320,18 +338,21 @@ def delete_answer(id):
 
 #region question_image_endpoints
 @app.route('/question-images', methods=['GET'])
+@jwt_required
 def get_question_images():
     question_images = QuestionImages.query.all()
     all_question_images = list(map(lambda x: x.serialize(), question_images))
     return jsonify(all_question_images), 200
 
 @app.route('/question-images-by-question-id/<int:id>', methods=['GET'])
+@jwt_required
 def get_question_images_by_question_id(id):
     question_images = QuestionImages.query.filter_by(id_question=id).all()
     all_question_images = list(map(lambda x: x.serialize(), question_images))
     return jsonify(all_question_images), 200
 
 @app.route('/question-images', methods=['POST'])
+@jwt_required
 def add_question_image():
     request_body = request.get_json()
     now = datetime.datetime.now()
@@ -342,6 +363,7 @@ def add_question_image():
     return jsonify("Question Image added"), 200
 
 @app.route('/question-image/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_question_image(id):
     question_image = QuestionImages.query.get(id)
     if question_image is None:
@@ -351,6 +373,7 @@ def delete_question_image(id):
     return jsonify("QuestionImage deleted"), 200
 
 @app.route('/question-images-delete-by-question-id/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_question_image_by_question_id(id):
     db.session.query(QuestionImages).filter(QuestionImages.id_question == id).delete(synchronize_session=False)
     db.session.commit()
@@ -359,18 +382,21 @@ def delete_question_image_by_question_id(id):
 
 #region answer_image_endpoints
 @app.route('/answer-images', methods=['GET'])
+@jwt_required
 def get_answer_images():
     answer_images = AnswerImages.query.all()
     all_answer_images = list(map(lambda x: x.serialize(), answer_images))
     return jsonify(all_answer_images), 200
 
 @app.route('/answer-images-by-answer-id/<int:id>', methods=['GET'])
+@jwt_required
 def get_answer_images_by_answer_id(id):
     answer_images = AnswerImages.query.filter_by(id_answer=id).all()
     all_answer_images = list(map(lambda x: x.serialize(), answer_images))
     return jsonify(all_answer_images), 200
 
 @app.route('/answer-images', methods=['POST'])
+@jwt_required
 def add_answer_image():
     request_body = request.get_json()
     now = datetime.datetime.now()
@@ -381,6 +407,7 @@ def add_answer_image():
     return jsonify("Answer Image added"), 200
 
 @app.route('/answer-image/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_answer_image(id):
     answer_image = AnswerImages.query.get(id)
     if answer_image is None:
@@ -390,6 +417,7 @@ def delete_answer_image(id):
     return jsonify("AnswerImage deleted"), 200
 
 @app.route('/answer-images-delete-by-answer-id/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_answer_image_by_answer_id(id):
     db.session.query(AnswerImages).filter(AnswerImages.id_answer == id).delete(synchronize_session=False)
     db.session.commit()
@@ -398,6 +426,7 @@ def delete_answer_image_by_answer_id(id):
 
 #region upload_images
 @app.route('/upload-question-images', methods=['POST'])
+@jwt_required
 def upload_question_images():
     files = request.files
     id_question = request.form.get('id_question')
@@ -413,6 +442,7 @@ def upload_question_images():
     return jsonify("OK"), 200
 
 @app.route('/upload-answer-images', methods=['POST'])
+@jwt_required
 def upload_answer_images():
     files = request.files
     id_answer = request.form.get('id_answer')
