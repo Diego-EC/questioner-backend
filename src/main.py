@@ -125,8 +125,8 @@ def add_user():
     request_body = request.get_json()
     now = datetime.datetime.now()
     user = User(name=request_body["name"], email=request_body["email"], password=request_body["password"], id_role=2, created=now, last_update=now)
-    db.session.add(user)
-    db.session.commit()    
+    user.save()
+    DBManager.commitSession()
     return jsonify("User added"), 200
 
 @app.route('/user/<int:id>', methods=['PUT'])
@@ -185,8 +185,8 @@ def add_question():
     now = datetime.datetime.now()
     question = Question(id_user=request_body["id_user"], title=request_body["title"], 
     description=request_body["description"], link=request_body["link"], created=now, last_update=now)
-    db.session.add(question)
-    db.session.commit()  
+    question.save()
+    DBManager.commitSession()
     return jsonify({"status": "OK", "msg": "Question added", "question": question.serialize()}), 200
 
 @app.route('/question/<int:id>', methods=['PUT'])
@@ -287,8 +287,8 @@ def add_answer():
     now = datetime.datetime.now()
     answer = Answer(id_question=request_body["id_question"], id_user=request_body["id_user"],  
     description=request_body["description"], link=request_body["link"], created=now, last_update=now)
-    db.session.add(answer)
-    db.session.commit()    
+    answer.save()
+    DBManager.commitSession()
     return jsonify({"status": "OK", "msg": "Answer added", "answer": answer.serialize()}), 200
     #return jsonify("Answer added"), 200
 
@@ -337,8 +337,8 @@ def add_question_image():
     now = datetime.datetime.now()
     question_image = QuestionImages(id_question=request_body["id_question"], url=request_body["url"],
     size=request_body["size"], created=now, last_update=now)
-    db.session.add(question_image)
-    db.session.commit()    
+    question_image.save()
+    DBManager.commitSession()   
     return jsonify("Question Image added"), 200
 
 @app.route('/question-image/<int:id>', methods=['DELETE'])
@@ -376,8 +376,8 @@ def add_answer_image():
     now = datetime.datetime.now()
     answer_image = AnswerImages(id_answer=request_body["id_answer"], url=request_body["url"],
     size=request_body["size"], created=now, last_update=now)
-    db.session.add(answer_image)
-    db.session.commit()    
+    answer_image.save()
+    DBManager.commitSession()
     return jsonify("Answer Image added"), 200
 
 @app.route('/answer-image/<int:id>', methods=['DELETE'])
@@ -408,8 +408,8 @@ def upload_question_images():
             now = datetime.datetime.now()
             question_image = QuestionImages(id_question=id_question, url=url_image, 
             size=0, created=now, last_update=now)
-            db.session.add(question_image)
-            db.session.commit()   
+            question_image.save()
+            DBManager.commitSession()
     return jsonify("OK"), 200
 
 @app.route('/upload-answer-images', methods=['POST'])
@@ -423,8 +423,8 @@ def upload_answer_images():
             now = datetime.datetime.now()
             answer_image = AnswerImages(id_answer=id_answer, url=url_image, 
             size=0, created=now, last_update=now)
-            db.session.add(answer_image)
-            db.session.commit()   
+            answer_image.save()
+            DBManager.commitSession()
     return jsonify("OK"), 200
 #endregion
 

@@ -21,7 +21,7 @@ class Role(db.Model, ModelHelper):
             "last_update": self.last_update
         }        
 
-class User(db.Model):
+class User(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=False, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
@@ -48,7 +48,7 @@ class User(db.Model):
             "last_update": self.last_update
         }
 
-class Question(db.Model):
+class Question(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     id_user = db.Column(db.Integer, db.ForeignKey("user.id"))
     title = db.Column(db.String(100), unique=False, nullable=False)
@@ -80,7 +80,7 @@ class Question(db.Model):
         question["user"] = self.user.serialize()
         return(question)
 
-class Answer(db.Model):
+class Answer(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     id_question = db.Column(db.Integer, db.ForeignKey("question.id"))
     id_user = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -106,7 +106,7 @@ class Answer(db.Model):
             "user_name": ""
         }
 
-class QuestionImages(db.Model):
+class QuestionImages(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     id_question = db.Column(db.Integer, db.ForeignKey("question.id"))
     url = db.Column(db.String(255), unique=False, nullable=False)
@@ -128,7 +128,7 @@ class QuestionImages(db.Model):
             "last_update": self.last_update
         }
 
-class AnswerImages(db.Model):
+class AnswerImages(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     id_answer = db.Column(db.Integer, db.ForeignKey("answer.id"))
     url = db.Column(db.String(255), unique=False, nullable=False)
