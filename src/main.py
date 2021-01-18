@@ -426,14 +426,19 @@ def delete_answer_image_by_answer_id(id):
 
 #region upload_images
 @app.route('/upload-question-images', methods=['POST'])
-@jwt_required
+#@jwt_required
 def upload_question_images():
+    print("upload_question_images")
     files = request.files
+    print(files)
     id_question = request.form.get('id_question')
     for key in files:
+        print(key)
         file = files[key]
         if file:
+            print(file)
             url_image = upload_file_to_s3(file, os.environ.get('S3_BUCKET_NAME'))
+            print(url_image)
             now = datetime.datetime.now()
             question_image = QuestionImages(id_question=id_question, url=url_image, 
             size=0, created=now, last_update=now)
@@ -442,7 +447,7 @@ def upload_question_images():
     return jsonify("OK"), 200
 
 @app.route('/upload-answer-images', methods=['POST'])
-@jwt_required
+#@jwt_required
 def upload_answer_images():
     files = request.files
     id_answer = request.form.get('id_answer')
