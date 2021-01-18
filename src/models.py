@@ -54,11 +54,16 @@ class Question(db.Model, ModelHelper):
     title = db.Column(db.String(100), unique=False, nullable=False)
     description = db.Column(db.String(5000), unique=False, nullable=False)
     link = db.Column(db.String(255), unique=False, nullable=True)
-    id_answer_selected = db.Column(db.Integer, db.ForeignKey("answer.id"), default=None)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship('User', foreign_keys=[id_user])
-    answer = db.relationship('Answer', foreign_keys=[id_answer_selected])
+    
+    
+    id_answer_selected = db.Column(db.Integer, db.ForeignKey("answer.id"), default=None)
+    answer_selected = db.relationship("Answer", foreign_keys=[id_answer_selected])
+
+    
+    answer = db.relationship('Answer', foreign_keys="Answer.id_question")
 
     def __repr__(self):
         return '<id %r>' % self.id
@@ -80,16 +85,24 @@ class Question(db.Model, ModelHelper):
         question["user"] = self.user.serialize()
         return(question)
 
+    def delete_answers(self):
+        for answer in self.answers:
+            db.session.delete(answer)
+
+
 class Answer(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
-    id_question = db.Column(db.Integer, db.ForeignKey("question.id"))
     id_user = db.Column(db.Integer, db.ForeignKey("user.id"))
     description = db.Column(db.String(5000), unique=False, nullable=False)
     link = db.Column(db.String(255), unique=False, nullable=True)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship("User", foreign_keys=[id_user])
+
+    # many to many
+    id_question = db.Column(db.Integer, db.ForeignKey("question.id", use_alter=True))
     question = db.relationship("Question", foreign_keys=[id_question])
+    #id_question = db.relationship("Question", unique=False, foreign_keys="Question.id_answer_selected")
 
     def __repr__(self):
         return '<Answer %r>' % self.id
