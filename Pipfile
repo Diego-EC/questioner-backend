@@ -22,11 +22,12 @@ flask-jwt-extended = "*"
 boto3 = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "*"
 
 [scripts]
-start="flask run -p 3000 -h 0.0.0.0"
+start="flask run -p 3001 -h localhost"
 init="flask db init"
 migrate="flask db migrate"
 upgrade="flask db upgrade"
 deploy="echo 'Please follow this 3 steps to deploy: https://github.com/4GeeksAcademy/flask-rest-hello/blob/master/README.md#deploy-your-website-to-heroku' "
+create-roles="flask create-roles"

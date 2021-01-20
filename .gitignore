@@ -8,3 +8,6 @@ dist/*
 package.json
 
 __pycache__/
+
+.vscode
+env

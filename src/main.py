@@ -294,11 +294,16 @@ def update_answer(id):
 
 @app.route('/answer/<int:id>', methods=['DELETE'])
 def delete_answer(id):
+    print("--> delete")
+    print(id)
     answer = Answer.query.get(id)
+    print(answer)
     if answer is None:
         raise APIException('Answer not found', status_code=404)
     db.session.delete(answer)
+    print("->deleted")
     db.session.commit() 
+    print("->commit")
     return jsonify("Answer deleted"), 200
 #endregion
 
