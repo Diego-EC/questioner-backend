@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import backref
 from helpers import ModelHelper
 
 db = SQLAlchemy()
@@ -126,7 +127,7 @@ class QuestionImages(db.Model, ModelHelper):
     size = db.Column(db.Integer, unique=False, nullable=True)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
-    question = db.relationship("Question", foreign_keys=[id_question])
+    question = db.relationship(Question, backref=backref("question", cascade="all,delete"))
 
     def __repr__(self):
         return '<QuestionImages %r>' % self.id
@@ -148,8 +149,7 @@ class AnswerImages(db.Model, ModelHelper):
     size = db.Column(db.Integer, unique=False, nullable=True)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
-    answer = db.relationship("Answer", foreign_keys=[id_answer])
-
+    answer = db.relationship(Answer, backref=backref("answer", cascade="all,delete"))
     def __repr__(self):
         return '<AnswerImages %r>' % self.id
 
