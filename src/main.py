@@ -9,6 +9,7 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Role, Question, Answer, QuestionImages, AnswerImages
+from helpers import DBManager
 import datetime
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -25,6 +26,7 @@ jwt = JWTManager(app)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=30)
 MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
@@ -35,32 +37,46 @@ setup_admin(app)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
+@app.cli.command("create-roles")
+def create_roles():
+    print("create_roles")
+    now = datetime.datetime.now()
+    if not Role.query.get(1):
+        role = Role(id=1, name="Admin", created=now, last_update=now)
+        role.save()
+    if not Role.query.get(2):
+        role = Role(id=2, name="User", created=now, last_update=now)
+        role.save()
+    DBManager.commitSession()
+    return
+
 # generate sitemap with all your endpoints
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
+    #return "", 200
 
 #region login_logout
 @app.route('/login', methods=['POST'])
 def login():
+    status = "KO"
     if not request.is_json:
-        return jsonify({"msg": "Missing JSON in request"}), 400
+        return jsonify({"status": status, "msg": "Missing JSON in request"}), 400
 
     email = request.json.get('email', None)
     password = request.json.get('password', None)
     if not email:
-        return jsonify({"msg": "Missing email parameter"}), 400
+        return jsonify({"status": status, "msg": "Missing email parameter"}), 400
     if not password:
-        return jsonify({"msg": "Missing password parameter"}), 400
+        return jsonify({"status": status, "msg": "Missing password parameter"}), 400
 
     user = User.query.filter_by(email=email).filter_by(password=password).filter_by(is_active=True).one_or_none()
 
-    status = "OK"
     if user is None:
-        return jsonify({"status": "KO", "msg": "Bad username or password"}), 401
+        return jsonify({"status": status, "msg": "Bad username or password"}), 401
 
-    #https://flask-jwt-extended.readthedocs.io/en/stable/api/
-    access_token = create_access_token(identity=user.id, expires_delta=datetime.timedelta(days=30))
+    status = "OK"
+    access_token = create_access_token(identity=user.id)
     return jsonify({"status": status, "access_token": access_token, "user": user.serialize()}), 200
 
 @app.route('/check-protected', methods=['POST'])
@@ -77,6 +93,7 @@ def logout():
 
 #region role_endpoints
 @app.route('/roles', methods=['GET'])
+@jwt_required
 def get_roles():
     roles = Role.query.all()
     all_roles = list(map(lambda x: x.serialize(), roles))
@@ -92,6 +109,7 @@ def get_user(id):
     return user.serialize(), 200
 
 @app.route('/user-by-email/<string:email>', methods=['GET'])
+@jwt_required
 def get_user_by_email(email):
     user = User.query.filter_by(email=email).first()
     if user is None:
@@ -99,6 +117,7 @@ def get_user_by_email(email):
     return user.serialize(), 200
 
 @app.route('/users', methods=['GET'])
+@jwt_required
 def get_users():
     users = User.query.all()
     all_users = list(map(lambda x: x.serialize(), users))
@@ -108,12 +127,13 @@ def get_users():
 def add_user():
     request_body = request.get_json()
     now = datetime.datetime.now()
-    user = User(name=request_body["name"], email=request_body["email"], password=request_body["password"], id_role=1, created=now, last_update=now)
-    db.session.add(user)
-    db.session.commit()    
+    user = User(name=request_body["name"], email=request_body["email"], password=request_body["password"], id_role=2, created=now, last_update=now)
+    user.save()
+    DBManager.commitSession()
     return jsonify("User added"), 200
 
 @app.route('/user/<int:id>', methods=['PUT'])
+@jwt_required
 def update_user(id):
     request_body = request.get_json()
     user = User.query.get(id)
@@ -131,6 +151,7 @@ def update_user(id):
     return jsonify("User updated"), 200
 
 @app.route('/user-is-active', methods=['PUT'])
+@jwt_required
 def update_user_is_active():
     request_body = request.get_json()
     user = User.query.get(request_body["id_user"])
@@ -146,6 +167,7 @@ def update_user_is_active():
 
 #region question_endpoints
 @app.route('/questions', methods=['GET'])
+@jwt_required
 def get_questions():
     questions = Question.query.all()
     all_questions = list(map(lambda x: x.serialize(), questions))
@@ -157,6 +179,7 @@ def get_questions():
     return jsonify(all_questions), 200
 
 @app.route('/question/<int:id>', methods=['GET'])
+@jwt_required
 def get_question(id):
     question = Question.query.get(id)
     if question is None:
@@ -164,16 +187,18 @@ def get_question(id):
     return jsonify(question.serialize_with_user()), 200
 
 @app.route('/question', methods=['POST'])
+@jwt_required
 def add_question():
     request_body = request.get_json()
     now = datetime.datetime.now()
     question = Question(id_user=request_body["id_user"], title=request_body["title"], 
     description=request_body["description"], link=request_body["link"], created=now, last_update=now)
-    db.session.add(question)
-    db.session.commit()  
+    question.save()
+    DBManager.commitSession()
     return jsonify({"status": "OK", "msg": "Question added", "question": question.serialize()}), 200
 
 @app.route('/question/<int:id>', methods=['PUT'])
+@jwt_required
 def update_question(id):
     request_body = request.get_json()
     question = Question.query.get(id)
@@ -191,6 +216,7 @@ def update_question(id):
     return jsonify("Question updated"), 200
 
 @app.route('/question/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_question(id):
     question = Question.query.get(id)
     if question is None:
@@ -205,6 +231,7 @@ def delete_question(id):
     return jsonify("Question deleted"), 200
 
 @app.route('/mark-best-answer', methods=['PUT'])
+@jwt_required
 def mark_best_answer():
     request_body = request.get_json()
     question = Question.query.get(request_body["id_question"])
@@ -218,6 +245,7 @@ def mark_best_answer():
     return jsonify("Answer marked"), 200
 
 @app.route('/search-questions-by-string/<string:searchText>', methods=['GET'])
+@jwt_required
 def get_search_questions_by_string(searchText):
     words = searchText.split(' ')
 
@@ -239,6 +267,7 @@ def get_search_questions_by_string(searchText):
 
 #region answer_endpoints
 @app.route('/answers', methods=['GET'])
+@jwt_required
 def get_answers():
     answers = Answer.query.all()
     all_answers = list(map(lambda x: x.serialize(), answers))
@@ -248,6 +277,7 @@ def get_answers():
     return jsonify(all_answers), 200
 
 @app.route('/answer/<int:id>', methods=['GET'])
+@jwt_required
 def get_answer(id):
     answer = Answer.query.get(id)
     if answer is None:
@@ -255,6 +285,7 @@ def get_answer(id):
     return jsonify(answer.serialize()), 200
 
 @app.route('/answers-by-question-id/<int:id>', methods=['GET'])
+@jwt_required
 def answers_by_question_id(id):
     answers  = Answer.query.filter_by(id_question=id).all() 
     if answers is None:
@@ -266,17 +297,19 @@ def answers_by_question_id(id):
     return jsonify(all_answers), 200
 
 @app.route('/answer', methods=['POST'])
+@jwt_required
 def add_answer():
     request_body = request.get_json()
     now = datetime.datetime.now()
     answer = Answer(id_question=request_body["id_question"], id_user=request_body["id_user"],  
     description=request_body["description"], link=request_body["link"], created=now, last_update=now)
-    db.session.add(answer)
-    db.session.commit()    
+    answer.save()
+    DBManager.commitSession()
     return jsonify({"status": "OK", "msg": "Answer added", "answer": answer.serialize()}), 200
     #return jsonify("Answer added"), 200
 
 @app.route('/answer/<int:id>', methods=['PUT'])
+@jwt_required
 def update_answer(id):
     request_body = request.get_json()
     answer = Answer.query.get(id)
@@ -293,6 +326,7 @@ def update_answer(id):
     return jsonify({"status": "OK", "msg": "Updated added", "answer": answer.serialize()}), 200
 
 @app.route('/answer/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_answer(id):
     print("--> delete")
     print(id)
@@ -309,28 +343,32 @@ def delete_answer(id):
 
 #region question_image_endpoints
 @app.route('/question-images', methods=['GET'])
+@jwt_required
 def get_question_images():
     question_images = QuestionImages.query.all()
     all_question_images = list(map(lambda x: x.serialize(), question_images))
     return jsonify(all_question_images), 200
 
 @app.route('/question-images-by-question-id/<int:id>', methods=['GET'])
+@jwt_required
 def get_question_images_by_question_id(id):
     question_images = QuestionImages.query.filter_by(id_question=id).all()
     all_question_images = list(map(lambda x: x.serialize(), question_images))
     return jsonify(all_question_images), 200
 
 @app.route('/question-images', methods=['POST'])
+@jwt_required
 def add_question_image():
     request_body = request.get_json()
     now = datetime.datetime.now()
     question_image = QuestionImages(id_question=request_body["id_question"], url=request_body["url"],
     size=request_body["size"], created=now, last_update=now)
-    db.session.add(question_image)
-    db.session.commit()    
+    question_image.save()
+    DBManager.commitSession()   
     return jsonify("Question Image added"), 200
 
 @app.route('/question-image/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_question_image(id):
     question_image = QuestionImages.query.get(id)
     if question_image is None:
@@ -340,6 +378,7 @@ def delete_question_image(id):
     return jsonify("QuestionImage deleted"), 200
 
 @app.route('/question-images-delete-by-question-id/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_question_image_by_question_id(id):
     db.session.query(QuestionImages).filter(QuestionImages.id_question == id).delete(synchronize_session=False)
     db.session.commit()
@@ -348,28 +387,32 @@ def delete_question_image_by_question_id(id):
 
 #region answer_image_endpoints
 @app.route('/answer-images', methods=['GET'])
+@jwt_required
 def get_answer_images():
     answer_images = AnswerImages.query.all()
     all_answer_images = list(map(lambda x: x.serialize(), answer_images))
     return jsonify(all_answer_images), 200
 
 @app.route('/answer-images-by-answer-id/<int:id>', methods=['GET'])
+@jwt_required
 def get_answer_images_by_answer_id(id):
     answer_images = AnswerImages.query.filter_by(id_answer=id).all()
     all_answer_images = list(map(lambda x: x.serialize(), answer_images))
     return jsonify(all_answer_images), 200
 
 @app.route('/answer-images', methods=['POST'])
+@jwt_required
 def add_answer_image():
     request_body = request.get_json()
     now = datetime.datetime.now()
     answer_image = AnswerImages(id_answer=request_body["id_answer"], url=request_body["url"],
     size=request_body["size"], created=now, last_update=now)
-    db.session.add(answer_image)
-    db.session.commit()    
+    answer_image.save()
+    DBManager.commitSession()
     return jsonify("Answer Image added"), 200
 
 @app.route('/answer-image/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_answer_image(id):
     answer_image = AnswerImages.query.get(id)
     if answer_image is None:
@@ -379,6 +422,7 @@ def delete_answer_image(id):
     return jsonify("AnswerImage deleted"), 200
 
 @app.route('/answer-images-delete-by-answer-id/<int:id>', methods=['DELETE'])
+@jwt_required
 def delete_answer_image_by_answer_id(id):
     db.session.query(AnswerImages).filter(AnswerImages.id_answer == id).delete(synchronize_session=False)
     db.session.commit()
@@ -387,21 +431,28 @@ def delete_answer_image_by_answer_id(id):
 
 #region upload_images
 @app.route('/upload-question-images', methods=['POST'])
+#@jwt_required
 def upload_question_images():
+    print("upload_question_images")
     files = request.files
+    print(files)
     id_question = request.form.get('id_question')
     for key in files:
+        print(key)
         file = files[key]
         if file:
+            print(file)
             url_image = upload_file_to_s3(file, os.environ.get('S3_BUCKET_NAME'))
+            print(url_image)
             now = datetime.datetime.now()
             question_image = QuestionImages(id_question=id_question, url=url_image, 
             size=0, created=now, last_update=now)
-            db.session.add(question_image)
-            db.session.commit()   
+            question_image.save()
+            DBManager.commitSession()
     return jsonify("OK"), 200
 
 @app.route('/upload-answer-images', methods=['POST'])
+#@jwt_required
 def upload_answer_images():
     files = request.files
     id_answer = request.form.get('id_answer')
@@ -412,8 +463,8 @@ def upload_answer_images():
             now = datetime.datetime.now()
             answer_image = AnswerImages(id_answer=id_answer, url=url_image, 
             size=0, created=now, last_update=now)
-            db.session.add(answer_image)
-            db.session.commit()   
+            answer_image.save()
+            DBManager.commitSession()
     return jsonify("OK"), 200
 #endregion
 

@@ -1,9 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import backref
+from helpers import ModelHelper
 
 db = SQLAlchemy()
 
-class Role(db.Model):
+class Role(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
@@ -19,9 +20,9 @@ class Role(db.Model):
             "name": self.name,
             "created": self.created,
             "last_update": self.last_update
-        }
+        }        
 
-class User(db.Model):
+class User(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=False, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
@@ -48,17 +49,22 @@ class User(db.Model):
             "last_update": self.last_update
         }
 
-class Question(db.Model):
+class Question(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     id_user = db.Column(db.Integer, db.ForeignKey("user.id"))
     title = db.Column(db.String(100), unique=False, nullable=False)
     description = db.Column(db.String(5000), unique=False, nullable=False)
     link = db.Column(db.String(255), unique=False, nullable=True)
-    id_answer_selected = db.Column(db.Integer, db.ForeignKey("answer.id"), default=None)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship('User', foreign_keys=[id_user])
-    answer = db.relationship('Answer', foreign_keys=[id_answer_selected])
+    
+    
+    id_answer_selected = db.Column(db.Integer, db.ForeignKey("answer.id"), default=None)
+    answer_selected = db.relationship("Answer", foreign_keys=[id_answer_selected])
+
+    
+    answer = db.relationship('Answer', foreign_keys="Answer.id_question")
 
     def __repr__(self):
         return '<id %r>' % self.id
@@ -80,16 +86,24 @@ class Question(db.Model):
         question["user"] = self.user.serialize()
         return(question)
 
-class Answer(db.Model):
+    def delete_answers(self):
+        for answer in self.answers:
+            db.session.delete(answer)
+
+
+class Answer(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
-    id_question = db.Column(db.Integer, db.ForeignKey("question.id"))
     id_user = db.Column(db.Integer, db.ForeignKey("user.id"))
     description = db.Column(db.String(5000), unique=False, nullable=False)
     link = db.Column(db.String(255), unique=False, nullable=True)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship("User", foreign_keys=[id_user])
+
+    # many to many
+    id_question = db.Column(db.Integer, db.ForeignKey("question.id", use_alter=True))
     question = db.relationship("Question", foreign_keys=[id_question])
+    #id_question = db.relationship("Question", unique=False, foreign_keys="Question.id_answer_selected")
 
     def __repr__(self):
         return '<Answer %r>' % self.id
@@ -106,7 +120,7 @@ class Answer(db.Model):
             "user_name": ""
         }
 
-class QuestionImages(db.Model):
+class QuestionImages(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     id_question = db.Column(db.Integer, db.ForeignKey("question.id"))
     url = db.Column(db.String(255), unique=False, nullable=False)
@@ -128,7 +142,7 @@ class QuestionImages(db.Model):
             "last_update": self.last_update
         }
 
-class AnswerImages(db.Model):
+class AnswerImages(db.Model, ModelHelper):
     id = db.Column(db.Integer, primary_key=True)
     id_answer = db.Column(db.Integer, db.ForeignKey("answer.id"))
     url = db.Column(db.String(255), unique=False, nullable=False)
