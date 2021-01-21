@@ -9,7 +9,7 @@ class Role(db.Model, ModelHelper):
     name = db.Column(db.String(80), unique=True, nullable=False)
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
-    
+    foo  = db.Column(db.String(255), unique=False, nullable=True)
     #print
     def __repr__(self):
         return '<Role %r>' % self.name
@@ -33,7 +33,7 @@ class User(db.Model, ModelHelper):
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     role = db.relationship('Role', lazy=True)
-
+    foo  = db.Column(db.String(255), unique=False, nullable=True)
     def __repr__(self):
         return '<Name %r>' % self.name        
 
@@ -59,13 +59,12 @@ class Question(db.Model, ModelHelper):
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship('User', foreign_keys=[id_user])
     
-    
     id_answer_selected = db.Column(db.Integer, db.ForeignKey("answer.id"), default=None)
     answer_selected = db.relationship("Answer", foreign_keys=[id_answer_selected])
 
     
     answer = db.relationship('Answer', foreign_keys="Answer.id_question")
-
+    foo  = db.Column(db.String(255), unique=False, nullable=True)
     def __repr__(self):
         return '<id %r>' % self.id
 
@@ -99,7 +98,7 @@ class Answer(db.Model, ModelHelper):
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     user = db.relationship("User", foreign_keys=[id_user])
-
+    foo  = db.Column(db.String(255), unique=False, nullable=True)
     # many to many
     id_question = db.Column(db.Integer, db.ForeignKey("question.id", use_alter=True))
     question = db.relationship("Question", foreign_keys=[id_question])
@@ -128,7 +127,7 @@ class QuestionImages(db.Model, ModelHelper):
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     question = db.relationship(Question, backref=backref("question", cascade="all,delete"))
-
+    foo  = db.Column(db.String(255), unique=False, nullable=True)
     def __repr__(self):
         return '<QuestionImages %r>' % self.id
 
@@ -150,6 +149,7 @@ class AnswerImages(db.Model, ModelHelper):
     created = db.Column(db.DateTime(), unique=False, nullable=False)
     last_update = db.Column(db.DateTime(), unique=False, nullable=False)
     answer = db.relationship(Answer, backref=backref("answer", cascade="all,delete"))
+    foo  = db.Column(db.String(255), unique=False, nullable=True)
     def __repr__(self):
         return '<AnswerImages %r>' % self.id
 
