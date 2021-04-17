@@ -25,7 +25,7 @@ boto3 = "*"
 python_version = "*"
 
 [scripts]
-start="flask run -p 3001 -h localhost"
+start="flask run -p 3000 -h 0.0.0.0"
 init="flask db init"
 migrate="flask db migrate"
 upgrade="flask db upgrade"
